@@ -4,18 +4,38 @@
   become: yes
 
   tasks:
-    - name: Install httpd (Apache)
+    - name: Install web server on RedHat family
       ansible.builtin.package:
         name: httpd
         state: present
+      when: ansible_facts['os_family'] == "RedHat"
 
-    - name: Ensure httpd is running and enabled
+    - name: Install web server on Debian family
+      ansible.builtin.package:
+        name: apache2
+        state: present
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Ensure web server is running and enabled (RedHat)
       ansible.builtin.service:
         name: httpd
         state: started
         enabled: yes
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Ensure web server is running and enabled (Debian)
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Set webroot path (same on both, but 예시로 분기)
+      ansible.builtin.set_fact:
+        web_root: "/var/www/html"
 
     - name: Deploy simple index.html
       ansible.builtin.copy:
-        dest: /var/www/html/index.html
-        content: "Deployed by Ansible CI/CD at {{ ansible_date_time.iso8601 }}"
+        dest: "{{ web_root }}/index.html"
+        content: "Deployed by Ansible CI/CD at {{ ansible_date_time.iso8601 }} ({{ ansible_facts['os_family'] }})"
+
