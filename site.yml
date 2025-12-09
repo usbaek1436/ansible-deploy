@@ -1,0 +1,21 @@
+---
+- name: Simple CI/CD test play
+  hosts: webservers
+  become: yes
+
+  tasks:
+    - name: Install httpd (Apache)
+      ansible.builtin.package:
+        name: httpd
+        state: present
+
+    - name: Ensure httpd is running and enabled
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy simple index.html
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: "Deployed by Ansible CI/CD at {{ ansible_date_time.iso8601 }}"
